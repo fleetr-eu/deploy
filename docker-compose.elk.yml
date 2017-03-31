@@ -1,0 +1,45 @@
+version: '2'
+
+services:
+  logspout:
+    image: ictu/logspout
+    restart: unless-stopped
+    hostname: logspout
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    extra_hosts:
+      - "elk:192.168.40.70"
+    environment:
+      ROUTE_URIS: logstash://elk:5454
+
+  kibana:
+    image: kibana
+    restart: unless-stopped
+    hostname: kibana
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+
+  elasticsearch:
+    image: elasticsearch
+    restart: unless-stopped
+    hostname: elasticsearch
+    volumes:
+      - /data/elk/elasticsearch/data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  logstash:
+    image: logstash
+    restart: unless-stopped
+    hostname: logstash
+    command: logstash -e 'input {
+                            udp {
+                              port => 5454
+                              codec => json
+                          } }
+                          output { elasticsearch { hosts => ["http://elasticsearch:9200"] } }'
+    ports:
+      - "5454:5454/udp"

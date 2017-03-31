@@ -1,0 +1,24 @@
+fleetr.eu, www.fleetr.eu {
+  proxy / www:80 {
+    websocket
+    transparent
+    max_fails 0
+  }
+}
+
+traccar.fleetr.eu {
+  proxy / traccar:8082 {
+    websocket
+    transparent
+    max_fails 0
+  }
+}
+
+mongo-express.fleetr.eu {
+  proxy / mongo-express:8081
+}
+
+pgweb.fleetr.eu {
+  basicauth / admin mightyadminpass
+  proxy / pgweb:8080
+}
