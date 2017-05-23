@@ -1,24 +1,20 @@
-fleetr.eu, www.fleetr.eu {
-  proxy / www:80 {
+{$HOSTNAME}, www.{$HOSTNAME} {
+  proxy / meteor:80 {
     websocket
-    transparent
-    max_fails 0
   }
 }
 
-traccar.fleetr.eu {
+traccar.{$HOSTNAME} {
   proxy / traccar:8082 {
     websocket
-    transparent
-    max_fails 0
   }
 }
 
-mongo-express.fleetr.eu {
+mongo-express.{$HOSTNAME} {
   proxy / mongo-express:8081
 }
 
-pgweb.fleetr.eu {
+pgweb.{$HOSTNAME} {
   basicauth / admin mightyadminpass
   proxy / pgweb:8080
 }

@@ -7,17 +7,20 @@ services:
       - ./Caddyfile:/etc/Caddyfile
       - ./.caddy:/root/.caddy
     restart: unless-stopped
-    hostname: caddy
+    hostname: ${HOSTNAME}
     ports:
       - "80:80"
       - "443:443"
-
-  www:
-    image: fleetr/web
-    restart: unless-stopped
     environment:
-     - ROOT_URL=https://fleetr.eu
-     - MONGO_URL=mongodb://mongo:27017/admin
+      HOSTNAME: ${HOSTNAME}
+
+  meteor:
+    image: fleetr/web
+    restart: unless-stoppedi
+    hostname: www.${HOSTNAME}
+    environment:
+     - ROOT_URL=https://${HOSTNAME}
+     - MONGO_URL=mongodb://mongo:27017/fleetr
      - MONGO_OPLOG_URL=mongodb://mongo:27017/local?authSource=admin
      - MAIL_URL=smtp://no-reply%40fleetr.eu:Z5fLfOmW3oeU@mail.fleetr.eu:465
      - 'METEOR_SETTINGS={"mqttUrl" : "mqtt://mqtt:1883", "mqttClientId": "fleetr@prod"}'
@@ -25,7 +28,7 @@ services:
   traccar:
     image: fleetr/traccar
     restart: unless-stopped
-    hostname: traccar
+    hostname: traccar.${HOSTNAME}
     depends_on:
       - db
       - mqtt
@@ -36,7 +39,7 @@ services:
   db:
     image: postgres:9
     restart: unless-stopped
-    hostname: db
+    hostname: db.${HOSTNAME}
     environment:
       POSTGRES_DB: traccar
       POSTGRES_USER: traccar
@@ -47,12 +50,12 @@ services:
   mqtt:
     image: greyarch/mosquitto
     restart: unless-stopped
-    hostname: mqtt
+    hostname: mqtt.${HOSTNAME}
 
   mongo:
     image: mongo:3
     restart: unless-stopped
-    hostname: mongo
+    hostname: mongo.${HOSTNAME}
     command: --replSet rs0
     volumes:
       - /data/fleetr/mongo/data:/data/db
@@ -60,7 +63,7 @@ services:
   processor:
     image: fleetr/processor
     restart: unless-stopped
-    hostname: processor
+    hostname: processor.${HOSTNAME}
     depends_on:
       - mongo
       - mqtt
@@ -68,29 +71,17 @@ services:
   nominatim:
     image: fleetr/nominatim
     restart: unless-stopped
-    hostname: nominatim
+    hostname: nominatim.${HOSTNAME}
 
   pgweb:
     image: donnex/pgweb
     restart: unless-stopped
-    hostname: pgweb
+    hostname: pgweb.${HOSTNAME}
 
   mongo-express:
     image: mongo-express
     restart: unless-stopped
-    hostname: mongo-express
+    hostname: mongo-express.${HOSTNAME}
     environment:
       ME_CONFIG_BASICAUTH_USERNAME: 'mongo'
       ME_CONFIG_BASICAUTH_PASSWORD: 'mongo@fleetr'
-
-  logentries:
-    image: logentries/docker-logentries
-    restart: unless-stopped
-    hostname: logentries
-    command: -t c7b42a8f-c6a8-41eb-a3a6-3d9b59a2484a -j --no-stats --skipByName log.*
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
-networks:
-  default:
-    driver: bridge
