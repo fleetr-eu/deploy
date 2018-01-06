@@ -1,25 +1,25 @@
-version: '2'
+version: '2.0'
 
 services:
   proxy:
-    image: abiosoft/caddy:0.9.5
+    image: abiosoft/caddy:0.10.10
     volumes:
       - ./Caddyfile:/etc/Caddyfile
       - ./.caddy:/root/.caddy
     restart: unless-stopped
-    hostname: ${HOSTNAME}
+    hostname: {{ domain }}
     ports:
       - "80:80"
       - "443:443"
     environment:
-      HOSTNAME: ${HOSTNAME}
+      HOSTNAME: {{ domain }}
 
   meteor:
     image: fleetr/web
-    restart: unless-stoppedi
-    hostname: www.${HOSTNAME}
+    restart: unless-stopped
+    hostname: www.{{ domain }}
     environment:
-     - ROOT_URL=https://${HOSTNAME}
+     - ROOT_URL=https://{{ domain }}
      - MONGO_URL=mongodb://mongo:27017/fleetr
      - MONGO_OPLOG_URL=mongodb://mongo:27017/local?authSource=admin
      - MAIL_URL=smtp://no-reply%40fleetr.eu:Z5fLfOmW3oeU@mail.fleetr.eu:465
@@ -28,7 +28,7 @@ services:
   traccar:
     image: fleetr/traccar
     restart: unless-stopped
-    hostname: traccar.${HOSTNAME}
+    hostname: traccar.{{ domain }}
     depends_on:
       - db
       - mqtt
@@ -39,31 +39,31 @@ services:
   db:
     image: postgres:9
     restart: unless-stopped
-    hostname: db.${HOSTNAME}
+    hostname: db.{{ domain }}
     environment:
       POSTGRES_DB: traccar
       POSTGRES_USER: traccar
       POSTGRES_PASSWORD: traccar@fleetr
     volumes:
-      - /data/traccar/postgres/data:/var/lib/postgresql/data
+      - {{ dirs.data }}/traccar/postgres/data:/var/lib/postgresql/data
 
   mqtt:
     image: greyarch/mosquitto
     restart: unless-stopped
-    hostname: mqtt.${HOSTNAME}
+    hostname: mqtt.{{ domain }}
 
   mongo:
     image: mongo:3
     restart: unless-stopped
-    hostname: mongo.${HOSTNAME}
+    hostname: mongo.{{ domain }}
     command: --replSet rs0
     volumes:
-      - /data/fleetr/mongo/data:/data/db
+      - {{ dirs.data }}/fleetr/mongo/data:/data/db
 
   processor:
     image: fleetr/processor
     restart: unless-stopped
-    hostname: processor.${HOSTNAME}
+    hostname: processor.{{ domain }}
     depends_on:
       - mongo
       - mqtt
@@ -71,17 +71,17 @@ services:
   nominatim:
     image: fleetr/nominatim
     restart: unless-stopped
-    hostname: nominatim.${HOSTNAME}
+    hostname: nominatim.{{ domain }}
 
   pgweb:
     image: donnex/pgweb
     restart: unless-stopped
-    hostname: pgweb.${HOSTNAME}
+    hostname: pgweb.{{ domain }}
 
   mongo-express:
     image: mongo-express
     restart: unless-stopped
-    hostname: mongo-express.${HOSTNAME}
+    hostname: mongo-express.{{ domain }}
     environment:
       ME_CONFIG_BASICAUTH_USERNAME: 'mongo'
       ME_CONFIG_BASICAUTH_PASSWORD: 'mongo@fleetr'

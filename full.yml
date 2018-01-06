@@ -1,0 +1,23 @@
+---
+  - hosts: localhost
+    gather_facts: false
+    connection: local
+    roles:
+      - role: scaleway
+        region: "{{ providers.scaleway.region }}"
+        commercial_type: "{{ providers.scaleway.size }}"
+        server_name: "{{ domain }}"
+        image: "{{ providers.scaleway.image }}"
+        organizationId: "{{ providers.scaleway.org_id | default(lookup('env','SCALEWAY_ORG_ID')) }}"
+        authToken: "{{ providers.scaleway.auth_token | default(lookup('env','SCALEWAY_AUTH_TOKEN')) }}"
+
+  - hosts: computeNode
+    gather_facts: true
+    vars:
+      ansible_python_interpreter: "/usr/bin/env python"
+      ansible_ssh_user: root
+      publicNodeIP: "{{ hostvars['localhost'].publicIP }}"
+      privateNodeIP: "{{ hostvars['localhost'].privateIP }}"
+    roles:
+      - docker
+      - fleetr

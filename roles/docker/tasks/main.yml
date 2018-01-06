@@ -1,0 +1,40 @@
+---
+  - name: Add docker-ce yum repositories
+    yum_repository:
+      name: docker-ce
+      description: Docker CE YUM repositories
+      baseurl: https://download.docker.com/linux/centos/7/$basearch/stable
+      gpgcheck: yes
+      gpgkey: https://download.docker.com/linux/centos/gpg
+
+  - name: Install epel-release
+    yum: name=epel-release state=latest
+
+  - name: Install docker dependencies
+    yum: name={{ item }} state=latest
+    with_items:
+      - python
+      - python-pip
+
+  - name: Install docker
+    yum: name=docker-ce-{{ docker.version }} state=present
+    notify: restart docker
+
+  - name: Install docker-py
+    pip: name=docker-py
+
+  - name: Check docker-compose version
+    shell: |
+      docker-compose -v
+    register: composeVersion
+    ignore_errors: True
+
+  - name: Install docker-compose
+    get_url:
+      url: "https://github.com/docker/compose/releases/download/{{ docker.compose.version }}/docker-compose-Linux-x86_64"
+      force: True
+      dest: "/bin/docker-compose"
+      mode: 0755
+    when: 'docker.compose.version not in composeVersion.stdout'
+
+  - meta: flush_handlers

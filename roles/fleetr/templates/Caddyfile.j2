@@ -1,0 +1,28 @@
+{{ domain }}, www.{{ domain }} {
+  proxy / meteor:80 {
+    websocket
+  }
+
+  tls dev@fleetr.eu
+}
+
+traccar.{{ domain }} {
+  proxy / traccar:8082 {
+    websocket
+  }
+
+  tls dev@fleetr.eu
+}
+
+mongo-express.{{ domain }} {
+  proxy / mongo-express:8081
+
+  tls dev@fleetr.eu
+}
+
+pgweb.{{ domain }} {
+  basicauth / {{ auth.user }} {{ auth.pass }}
+  proxy / pgweb:8080
+
+  tls dev@fleetr.eu
+}

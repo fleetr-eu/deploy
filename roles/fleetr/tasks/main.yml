@@ -1,0 +1,17 @@
+---
+- name: Ensure data directory exists
+  file: path={{ dirs.fleetr }} state=directory mode=0755
+
+- name: Drop Caddy file
+  template:
+    src: Caddyfile.j2
+    dest: "{{ dirs.fleetr }}/Caddyfile"
+  notify: restart fleetr
+
+- name: Drop compose file
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ dirs.fleetr }}/docker-compose.yml"
+  notify: restart fleetr
+
+- meta: flush_handlers

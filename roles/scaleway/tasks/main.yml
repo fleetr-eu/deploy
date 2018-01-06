@@ -1,0 +1,48 @@
+---
+  - name: Create authentication file
+    template:
+      src: .scwrc.j2
+      dest: "{{ playbook_dir }}/.scwrc"
+      mode: 0600
+
+  - name: Check if host exists
+    shell: |
+      docker run --rm -v {{ playbook_dir }}/.scwrc:/.scwrc scaleway/cli --region="{{ region }}" \
+        inspect {{ server_name }}
+    ignore_errors: True
+    register: host_check
+
+  - debug:
+      msg: "{{ host_check.stderr }}"
+
+  - name: Create compute node host
+    when: '"Unable to resolve identifier" in host_check.stderr'
+    shell: |
+      docker run --rm -v {{ playbook_dir }}/.scwrc:/.scwrc scaleway/cli --region="{{ region }}" \
+        run --commercial-type="{{ commercial_type }}" \
+        --name="{{ server_name }}" \
+        "{{ image }}"
+    ignore_errors: True
+
+  - name: Retrieve public IP
+    shell: |
+      docker run --rm -v {{ playbook_dir }}/.scwrc:/.scwrc scaleway/cli --region="{{ region }}" \
+        inspect --format="{{ '{{' }} .PublicAddress.IP {{ '}}' }}" {{ server_name }} | tr -d '\r'
+    register: pubip
+
+  - name: Retrieve private IP
+    shell: |
+      docker run --rm -v {{ playbook_dir }}/.scwrc:/.scwrc scaleway/cli --region="{{ region }}" \
+        inspect --format="{{ '{{' }} .PrivateIP {{ '}}' }}" {{ server_name }}
+    register: privip
+
+  - name: Add compute node to inventory
+    add_host:
+      name: "{{ server_name }}"
+      groups: computeNode
+      ansible_host: "{{ pubip.stdout }}"
+
+  - name: Store host ips in vars
+    set_fact:
+      publicIP: "{{ pubip.stdout }}"
+      privateIP: "{{ privip.stdout }}"

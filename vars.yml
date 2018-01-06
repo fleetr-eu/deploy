@@ -1,0 +1,22 @@
+---
+
+domain: demo.fleetr.eu
+
+auth:
+  user: admin
+  pass: mightyadminpass
+
+dirs:
+  fleetr: /fleetr
+  data: /data
+
+providers:
+  scaleway:
+    region: ams1
+    size: VC1L #X64-15GB
+    image: CentOS_7_3
+
+docker:
+  version: "17.09.0.ce-1.el7.centos"
+  compose:
+    version: "1.16.1"
