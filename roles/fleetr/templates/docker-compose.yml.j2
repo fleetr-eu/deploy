@@ -64,6 +64,8 @@ services:
     image: fleetr/processor
     restart: unless-stopped
     hostname: processor.{{ domain }}
+    environment:
+      - "MONGO_URL=mongodb://mongo:27017/fleetr"
     depends_on:
       - mongo
       - mqtt
