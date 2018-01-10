@@ -4,8 +4,8 @@
 
 The following requirements must be met before you can execute this playbook:
 
-* Ansible 2.3 or higher on control machine
-* Scaleway CLI on the control machine
+* Ansible 2.3 or higher
+* Docker
 
 ### Usage
 
