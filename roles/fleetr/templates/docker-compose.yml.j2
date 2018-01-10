@@ -53,7 +53,7 @@ services:
     hostname: mqtt.{{ domain }}
 
   mongo:
-    image: mongo:3
+    image: mongo:3.4
     restart: unless-stopped
     hostname: mongo.{{ domain }}
     command: --replSet rs0
